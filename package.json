@@ -1,0 +1,25 @@
+{
+  "name": "skyfchain",
+  "version": "1.0.0",
+  "description": "Skyfchain token",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SKYFchain/skyfchain.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SKYFchain/skyfchain/issues"
+  },
+  "homepage": "https://github.com/SKYFchain/skyfchain#readme",
+  "dependencies": {
+    "zeppelin-solidity": "^1.6.0"
+  }
+}
