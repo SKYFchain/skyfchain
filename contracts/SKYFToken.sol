@@ -285,12 +285,28 @@ contract SKYFToken is Ownable {
         emit Transfer(_who, address(0), _value);
     }
 
-    function burnWallet(address _wallet, uint256 _amount) public onlyCrowdsaleContract {
-        _burn(_wallet, _amount);
-    }
-
-    function finalize() onlyCrowdsaleContract public {
+    function finalize() public onlyCrowdsaleContract {
+        require(state == State.Active);
         state = State.Finalized;
+
+        uint256 crowdsaleBalance = balanceOf(crowdsaleWallet);
+
+        uint256 burnAmount = networkDevelopmentSupply.mul(crowdsaleBalance).div(crowdsaleSupply);
+        _burn(networkDevelopmentWallet, burnAmount);
+
+        burnAmount = communityDevelopmentSupply.mul(crowdsaleBalance).div(crowdsaleSupply);
+        _burn(communityDevelopmentWallet, burnAmount);
+
+        burnAmount = reserveSupply.mul(crowdsaleBalance).div(crowdsaleSupply);
+        _burn(reserveWallet, burnAmount);
+
+        burnAmount = bountySupply.mul(crowdsaleBalance).div(crowdsaleSupply);
+        _burn(bountyWallet, burnAmount);
+
+        burnAmount = teamSupply.mul(crowdsaleBalance).div(crowdsaleSupply);
+        _burn(teamWallet, burnAmount);
+
+        _burn(crowdsaleWallet, crowdsaleBalance);
     }
     
     function addAirdrop(address _who, address _beneficiary, uint256 _amount) public onlyCrowdsaleContract {
