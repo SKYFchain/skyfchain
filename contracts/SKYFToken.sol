@@ -338,9 +338,9 @@ contract SKYFToken is Ownable {
         uint256 initialAmount = airdrop[_who];
         if (initialAmount > 0) {
             uint256 rate = balances[_who].div(initialAmount);
-            if (rate > 4) {
+            if (rate >= 4) {
                 delete airdrop[_who];
-            } else if (rate > 2) {
+            } else if (rate >= 2) {
                 delete airdrop[_who];
                 shortenedAirdrop[_who] = initialAmount;
             }
@@ -348,7 +348,7 @@ contract SKYFToken is Ownable {
             initialAmount = shortenedAirdrop[_who];
             if (initialAmount > 0) {
                 rate = balances[_who].div(initialAmount);
-                if (rate > 4) {
+                if (rate >= 4) {
                     delete shortenedAirdrop[_who];
                 }
             }

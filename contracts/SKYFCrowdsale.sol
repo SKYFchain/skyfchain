@@ -157,7 +157,8 @@ contract SKYFCrowdsale is Ownable{
     function createAirdrop(address _beneficiary, uint256 _amount) public notEnded ownerOrSiteAccount {
         require(_beneficiary != address(0));
         require(_amount > 0);
-        
+        whitelist[_beneficiary] = true;
+
         address sender;
         if (msg.sender == owner) {
             sender = this;
