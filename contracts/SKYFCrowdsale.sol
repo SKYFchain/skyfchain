@@ -156,7 +156,6 @@ contract SKYFCrowdsale is Ownable{
     */
     function createAirdrop(address _beneficiary, uint256 _amount) public notEnded ownerOrSiteAccount {
         require(_beneficiary != address(0));
-        require(!token.isAirdrop(_beneficiary));
         require(_amount > 0);
         
         address sender;
@@ -199,33 +198,11 @@ contract SKYFCrowdsale is Ownable{
     */
     function finalize() onlyOwner public {
         require(now > endTime);
-
         
-
-        uint256 crowdsaleBalance = token.balanceOf(token.crowdsaleWallet());
-        uint256 crowdsaleSupply = token.crowdsaleSupply();
-
-        _burnWallet(token.networkDevelopmentWallet(), token.networkDevelopmentSupply(), crowdsaleBalance, crowdsaleSupply);
-        _burnWallet(token.communityDevelopmentWallet(), token.communityDevelopmentSupply(), crowdsaleBalance, crowdsaleSupply);
-        _burnWallet(token.reserveWallet(), token.reserveSupply(), crowdsaleBalance, crowdsaleSupply);
-        _burnWallet(token.bountyWallet(), token.bountySupply(), crowdsaleBalance, crowdsaleSupply);
-        _burnWallet(token.teamWallet(), token.teamSupply(), crowdsaleBalance, crowdsaleSupply);
-
-        token.burnWallet(tokenWallet, crowdsaleBalance);
-
         token.finalize();
 
         emit Finalized();
         _kill();
-    }
-
-    /**
-     * @dev helper method that 
-     *      kill the contract and send funds to owner
-     */
-    function _burnWallet(address _wallet, uint256 _supply, uint256 _crowdsaleBalance, uint256 _crowdsaleSupply) internal {
-        uint256 burnAmount = _supply.mul(_crowdsaleBalance).div(_crowdsaleSupply);
-        token.burnWallet(_wallet, burnAmount);
     }
 
     /**

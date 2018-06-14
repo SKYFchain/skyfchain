@@ -124,10 +124,15 @@ contract SKYFToken is Ownable {
         emit Transfer(address(0), _to, _amount);
     }
 
+    function _airdropUnlocked(address _who) internal view returns (bool) {
+        return now > airdropTime 
+        || (now > shortAirdropTime && airdrop[_who] == 0) 
+        || shortenedAirdrop[msg.sender] == 0;
+    }
+
     modifier erc20Allowed() {
         require(state == State.Finalized || msg.sender == crowdsaleContractAddress || msg.sender == siteAccount || msg.sender == crowdsaleWallet);
-        require(now > airdropTime || airdrop[msg.sender] == 0);
-        require(now > shortAirdropTime || shortenedAirdrop[msg.sender] == 0 );
+        require (_airdropUnlocked(msg.sender));
         _;
     }
 
@@ -170,6 +175,8 @@ contract SKYFToken is Ownable {
     function transfer(address _to, uint256 _value) public erc20Allowed returns (bool) {
         require(_to != address(0));
 
+        require(_airdropUnlocked(_to));
+
         // SafeMath.sub will throw if there is not enough balance.
         balances[msg.sender] = balances[msg.sender].sub(_value);
         balances[_to] = balances[_to].add(_value);
@@ -189,6 +196,9 @@ contract SKYFToken is Ownable {
 
     function _transferFrom(address _who, address _from, address _to, uint256 _value) internal returns (bool) {
         require(_to != address(0));
+        require(_airdropUnlocked(_to) || _from == crowdsaleWallet);
+        
+        
 
         uint256 _allowance = allowed[_from][_who];
 
@@ -285,19 +295,37 @@ contract SKYFToken is Ownable {
         emit Transfer(_who, address(0), _value);
     }
 
-    function burnWallet(address _wallet, uint256 _amount) public onlyCrowdsaleContract {
-        _burn(_wallet, _amount);
-    }
-
-    function finalize() onlyCrowdsaleContract public {
+    function finalize() public onlyCrowdsaleContract {
+        require(state == State.Active);
         state = State.Finalized;
+
+        uint256 crowdsaleBalance = balanceOf(crowdsaleWallet);
+
+        uint256 burnAmount = networkDevelopmentSupply.mul(crowdsaleBalance).div(crowdsaleSupply);
+        _burn(networkDevelopmentWallet, burnAmount);
+
+        burnAmount = communityDevelopmentSupply.mul(crowdsaleBalance).div(crowdsaleSupply);
+        _burn(communityDevelopmentWallet, burnAmount);
+
+        burnAmount = reserveSupply.mul(crowdsaleBalance).div(crowdsaleSupply);
+        _burn(reserveWallet, burnAmount);
+
+        burnAmount = bountySupply.mul(crowdsaleBalance).div(crowdsaleSupply);
+        _burn(bountyWallet, burnAmount);
+
+        burnAmount = teamSupply.mul(crowdsaleBalance).div(crowdsaleSupply);
+        _burn(teamWallet, burnAmount);
+
+        _burn(crowdsaleWallet, crowdsaleBalance);
     }
     
     function addAirdrop(address _who, address _beneficiary, uint256 _amount) public onlyCrowdsaleContract {
-        if (airdrop[_beneficiary] == 0) {
-            airdrop[_beneficiary] = _amount;
+        if (shortenedAirdrop[_beneficiary] != 0) {
+            shortenedAirdrop[_beneficiary] += _amount;
         }
-        
+        else {
+            airdrop[_beneficiary] = airdrop[_beneficiary] + _amount;
+        }
         _transferFrom(_who, crowdsaleWallet, _beneficiary, _amount);
         
     }

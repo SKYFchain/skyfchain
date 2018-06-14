@@ -11,17 +11,33 @@ var env = require("../env.js");
 contract('SKYFToken', function() {
     let token, crowdsale, ndf, rf, tf
     let me
+    let endDate = new Date(1534334400*1000);
+
+    const totalInitial = 1200000000;
+    const crowdsaleInitial = 528000000;
+    const ndfInitial = 180000000;
+    const cdfInitial = 120000000;
+    const rfInitial = 114000000;    
+    const bfInitial = 18000000;
+    const tfInitial = 240000000;
+
+    const crowdsaleAllowance = 400000000;
+    const siteAccountAllowance = 128000000;
 
     function form18DecimalsTo1(source) {
         return source.dividedBy(new BigNumber(10).pow(18)).toNumber();
     }
 
     // Move forward
-    function quantumLeap(days) {
-        web3.currentProvider.send({jsonrpc: "2.0", method: "evm_increaseTime", params: [86400 * days], id: 0});
+    function quantumLeap(toDate) {
+        var date = new Date();
+        var dateDiff = toDate.getTime() - date.getTime();
+        web3.currentProvider.send({jsonrpc: "2.0", method: "evm_increaseTime", params: [dateDiff], id: 0});
     }
 
-    beforeEach(async function () {
+
+
+    before(async function () {
         ndf = await SKYFNetworkDevelopmentFund.new({from: env.tests.accounts.owner, gas: env.network.gasAmount});
         rf = await SKYFReserveFund.new({from: env.tests.accounts.owner, gas: env.network.gasAmount});
         tf = await SKYFTeamFund.new({from: env.tests.accounts.owner, gas: env.network.gasAmount});
@@ -61,13 +77,14 @@ contract('SKYFToken', function() {
 
     });
 
+    // START Finalize time not come yet
     // START Check balances
 
     it("Check initial balance", async() => {
         const totalBalance = await token.totalSupply.call(
             {from: env.tests.accounts.owner, gas: env.network.gasAmount});
 
-        assert.equal(form18DecimalsTo1(totalBalance), 1200000000, "Wrong of total tokens");
+        assert.equal(form18DecimalsTo1(totalBalance), totalInitial, "Wrong of total tokens");
     });
 
     it("Check crowdsale balance", async() => {
@@ -75,7 +92,7 @@ contract('SKYFToken', function() {
             env.development.accounts.crowdsaleWallet, 
             {from: env.tests.accounts.owner, gas: env.network.gasAmount});
 
-        assert.equal(form18DecimalsTo1(balance), 528000000, "Wrong balance of crowdsaleWallet");
+        assert.equal(form18DecimalsTo1(balance), crowdsaleInitial, "Wrong balance of crowdsaleWallet");
     });
 
     it('Check networkDevelopmentWallet balance', async() => {
@@ -83,7 +100,7 @@ contract('SKYFToken', function() {
             ndf.address, 
             {from: env.tests.accounts.owner, gas: env.network.gasAmount});
 
-        assert.equal(form18DecimalsTo1(balance), 180000000, "Wrong balance of networkDevelopmentWallet");
+        assert.equal(form18DecimalsTo1(balance), ndfInitial, "Wrong balance of networkDevelopmentWallet");
     });
 
     it('Check communityDevelopmentWallet balance', async() => {
@@ -91,7 +108,7 @@ contract('SKYFToken', function() {
             env.development.accounts.communityDevelopmentWallet, 
             {from: env.tests.accounts.owner, gas: env.network.gasAmount});
 
-        assert.equal(form18DecimalsTo1(balance), 120000000, "Wrong balance of communityDevelopmentWallet");
+        assert.equal(form18DecimalsTo1(balance), cdfInitial, "Wrong balance of communityDevelopmentWallet");
     });
 
     it('Check reserveWallet balance', async() => {
@@ -99,7 +116,7 @@ contract('SKYFToken', function() {
             rf.address,
             {from: env.tests.accounts.owner, gas: env.network.gasAmount});
 
-        assert.equal(form18DecimalsTo1(balance), 114000000, "Wrong balance of reserveWallet");
+        assert.equal(form18DecimalsTo1(balance), rfInitial, "Wrong balance of reserveWallet");
     });
 
     it('Check bountyWallet balance', async() => {
@@ -107,15 +124,15 @@ contract('SKYFToken', function() {
             env.development.accounts.bountyWallet, 
             {from: env.tests.accounts.owner, gas: env.network.gasAmount});
 
-        assert.equal(form18DecimalsTo1(balance), 18000000, "Wrong balance of bountyWallet");
+        assert.equal(form18DecimalsTo1(balance), bfInitial, "Wrong balance of bountyWallet");
     });
 
-    it('Check teamWallet balances', async() => {
+    it('Check teamWallet balance', async() => {
         const balance = await token.balanceOf(
            tf.address, 
             {from: env.tests.accounts.owner, gas: env.network.gasAmount});
 
-        assert.equal(form18DecimalsTo1(balance), 240000000, "Wrong balance of teamWallet");
+        assert.equal(form18DecimalsTo1(balance), tfInitial, "Wrong balance of teamWallet");
     });
 
     // END Check balances
@@ -136,57 +153,149 @@ contract('SKYFToken', function() {
         
         const crowdsaleBalance =  await token.balanceOf(env.development.accounts.crowdsaleWallet, {from: env.development.accounts.crowdsaleWallet, gas: env.network.gasAmount});
 
-        assert.equal(form18DecimalsTo1(balance) + form18DecimalsTo1(crowdsaleBalance), 528000000, "Wrong wallet balance after transfer");
+        assert.equal(form18DecimalsTo1(crowdsaleBalance), crowdsaleInitial-100000, "Wrong wallet balance after transfer");
 
     });
 
     it('Check transfer with insufficient balance', async() => {
-        var exceptionRaised = false;
         try {
             await token.transfer(
                 env.tests.accounts.firstBuyerAddress
                 ,web3.toWei("529", "mether"),
                 {from: env.development.accounts.crowdsaleWallet, gas: env.network.gasAmount});
+            assert.equal(false, true, "Missing exception");
         }
-        catch (e) {
-            exceptionRaised = true;
-        }
-        assert.equal(exceptionRaised, true, "Missing exception");
+        catch (e) { }
     });
 
     it('Check transfer to 0 address', async() => {
-        var exceptionRaised = false;
         try {
             await token.transfer(
                 0
                 ,web3.toWei("10", "mether"),
                 {from: env.development.accounts.communityDevelopmentWallet, gas: env.network.gasAmount});
+                assert.equal(false, true, "Missing exception");
+                
         }
-        catch (e) {
-            exceptionRaised = true;
-        }
-        assert.equal(exceptionRaised, true, "Missing exception");
+        catch (e) {}
     });
 
     // END check transfers
 
+
     // START check ERC20Allowed
     
-    it('check transfer prior to crowdsale end', async() => {
-        var exceptionraised = false;
+    it('Check transfer prior to crowdsale end', async() => {
         try {
             await token.transfer(
-                env.tests.accounts.firstbuyeraddress
+                env.tests.accounts.firstBuyerAddress
                 ,web3.towei("10", "mether"),
-                {from: env.development.accounts.communitydevelopmentwallet, gas: env.network.gasamount});
+                {from: env.development.accounts.communityDevelopmentWallet, gas: env.network.gasAmount});
+                assert.equal(false, true, "Missing exception");
         }
         catch (e) {
-            exceptionraised = true;
         }
-        assert.equal(exceptionraised, true, "missing exception");
+        
+    });
+
+    
+
+    it('Finalize before end time', async() => {
+        try {
+            await crowdsale.finalize({from: env.tests.accounts.owner, gas: env.network.gasAmount});
+            assert.equal(true,false, "Missing exception");
+        }
+        catch (e) {}
     });
     
-    // END check ERC20Allowed
+    //END Finalize time not come yet    
+    it('Finalize after end time', async() => {
+        //Check that contract exists
+        await crowdsale.rate.call({from: env.tests.accounts.owner, gas: env.network.gasAmount});
+
+        quantumLeap(endDate);
+        await crowdsale.finalize({from: env.tests.accounts.owner, gas: env.network.gasAmount});
+
+        //Check that contract is killed
+        try {
+            await crowdsale.rate.call({from: env.tests.accounts.owner, gas: env.network.gasAmount});
+            assert.equal(true,false, "Missing exception");
+        }
+        catch (e) {}
+    });
+
     
+    //BEGIN Balances after finalization
+    it('Check finalization', async() => {
+        var percentageToLeave = (
+            100000
+            +0
+        )/crowdsaleInitial;
+        
+        const totalSupply = await token.totalSupply({from: env.tests.accounts.owner, gas: env.network.gasAmount});
+        assert.equal(form18DecimalsTo1(totalSupply), totalInitial*percentageToLeave, "Wrong number of total tokens");
+
+        const crowdsaleBalance = await token.balanceOf(env.development.accounts.crowdsaleWallet, {from: env.tests.accounts.owner, gas: env.network.gasAmount});
+        assert.equal(form18DecimalsTo1(crowdsaleBalance), 0, "Wrong crowdsale balance");
+
+        const ndfBalance = await token.balanceOf(ndf.address, {from: env.tests.accounts.owner, gas: env.network.gasAmount});
+        assert.equal(form18DecimalsTo1(ndfBalance), ndfInitial*percentageToLeave, "Wrong NDF balance");
+
+        const cdfBalance = await token.balanceOf(env.development.accounts.communityDevelopmentWallet, {from: env.tests.accounts.owner, gas: env.network.gasAmount});
+        assert.equal(form18DecimalsTo1(cdfBalance), cdfInitial*percentageToLeave, "Wrong CDF balance");
+
+        const rfBalance = await token.balanceOf(rf.address, {from: env.tests.accounts.owner, gas: env.network.gasAmount});
+        assert.equal(form18DecimalsTo1(rfBalance), rfInitial*percentageToLeave, "Wrong RF balance");
+
+        const bfBalance = await token.balanceOf(env.development.accounts.bountyWallet, {from: env.tests.accounts.owner, gas: env.network.gasAmount});
+        assert.equal(form18DecimalsTo1(bfBalance), bfInitial*percentageToLeave, "Wrong BF balance");
+
+        const tfBalance = await token.balanceOf(tf.address, {from: env.tests.accounts.owner, gas: env.network.gasAmount});
+        assert.equal(form18DecimalsTo1(tfBalance), tfInitial*percentageToLeave, "Wrong TF balance");
+    });
+    
+    //END After finalization
+
+    //START transferFrom
+
+    it('Check transfer from one address to another address', async() => {
+
+        var appr = await token.approve(
+            env.tests.accounts.secondBuyerAddress, 
+            web3.toWei("10", "kether"),
+            {from: env.tests.accounts.firstBuyerAddress, gas: env.network.gasAmount}
+        );
+
+        //assert.equal(appr, true, "Approve false");
+
+        var allowance = await token.allowance.call(
+            env.tests.accounts.firstBuyerAddress
+            , env.tests.accounts.secondBuyerAddress
+            , {from: env.tests.accounts.secondBuyerAddress, gas: env.network.gasAmount});
+        assert.equal(form18DecimalsTo1(allowance), 10000, "Wrong allowance");
+
+        await token.transferFrom(
+            env.tests.accounts.firstBuyerAddress,
+            env.tests.accounts.secondBuyerAddress, 
+            web3.toWei("10", "kether"),
+            {from: env.tests.accounts.secondBuyerAddress, gas: env.network.gasAmount}
+        );
+
+        const balanceFrom = await token.balanceOf(
+            env.tests.accounts.firstBuyerAddress, 
+            {from: env.tests.accounts.firstBuyerAddress, gas: env.network.gasAmount}
+        );
+        
+        const balanceTo = await token.balanceOf(
+            env.tests.accounts.secondBuyerAddress, 
+            {from: env.tests.accounts.secondBuyerAddress, gas: env.network.gasAmount}
+        );
+
+        assert.equal(form18DecimalsTo1(balanceFrom), 90000 , "Wrong balance beneficiary wallet after transfer");
+        assert.equal(form18DecimalsTo1(balanceTo), 10000 , "Wrong balance recipient wallet after transfer");
+
+    });
+
+    //END transferForm
 
 })
