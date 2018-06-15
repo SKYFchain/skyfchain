@@ -7,7 +7,8 @@ const port = 8545;
 
 let options = {
     mnemonic: "web life name funny sunset nut feed machine object bag saddle deposit",
-    logger: console
+    logger: console,
+    total_accounts: 12
 };
 
 let server = Ganache.server(options);

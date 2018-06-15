@@ -125,9 +125,9 @@ contract SKYFToken is Ownable {
     }
 
     function _airdropUnlocked(address _who) internal view returns (bool) {
-        return now > airdropTime 
+        return now > airdropTime
         || (now > shortAirdropTime && airdrop[_who] == 0) 
-        || shortenedAirdrop[msg.sender] == 0;
+        || !isAirdrop(_who);
     }
 
     modifier erc20Allowed() {
