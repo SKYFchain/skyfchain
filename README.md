@@ -1,7 +1,7 @@
 # skyfchain
 Skyfchain's repository
 
-https://travis-ci.org/SKYFchain/skyfchain.svg?branch=master
+[https://travis-ci.org/SKYFchain/skyfchain.svg?branch=master]
 
 ## How to use
 
