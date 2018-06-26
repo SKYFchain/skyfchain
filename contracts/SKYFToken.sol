@@ -307,6 +307,18 @@ contract SKYFToken is Ownable {
     }
     
     function addAirdrop(address _who, address _beneficiary, uint256 _amount) public onlyCrowdsaleContract {
+        require(_beneficiary != crowdsaleWallet);
+        require(_beneficiary != networkDevelopmentWallet);
+        require(_beneficiary != communityDevelopmentWallet);
+        require(_beneficiary != reserveWallet);
+        require(_beneficiary != bountyWallet);
+        require(_beneficiary != teamWallet);
+        require(_beneficiary != siteAccount);
+        require(_beneficiary != crowdsaleContractAddress);
+
+        //Don't allow to block already bought tokens with airdrop.
+        require(balances[_beneficiary] == 0 || isAirdrop(_beneficiary));
+
         if (shortenedAirdrop[_beneficiary] != 0) {
             shortenedAirdrop[_beneficiary] += _amount;
         }
