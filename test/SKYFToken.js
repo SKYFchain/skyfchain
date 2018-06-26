@@ -303,13 +303,29 @@ contract('SKYFToken', function() {
         const startBalance = await token.balanceOf(env.tests.accounts.secondBuyerAddress, {gas: env.network.gasAmount});
         await crowdsale.buyTokens(
             env.tests.accounts.secondBuyerAddress
-             , {from: env.tests.accounts.secondBuyerAddress, value: web3.toWei("2", "ether"), gas: env.network.gasAmount});
+             , {from: env.tests.accounts.secondBuyerAddress, value: web3.toWei("1", "ether"), gas: env.network.gasAmount});
 
         const endBalance = await token.balanceOf(env.tests.accounts.secondBuyerAddress, {gas: env.network.gasAmount});
         
-        assert.equal(form18DecimalsTo1(endBalance)-form18DecimalsTo1(startBalance), 10000, "Balance does not match");
+        assert.equal(form18DecimalsTo1(endBalance)-form18DecimalsTo1(startBalance), 5000, "Balance does not match");
 
         await crowdsale.setRate(env.development.ETHUSD, {gas: env.network.gasAmount});
+    });
+    
+
+    it('Check set price', async() => {
+        await crowdsale.setPrice(web3.toWei("130", "finney"), {gas: env.network.gasAmount});
+
+        const startBalance = await token.balanceOf(env.tests.accounts.secondBuyerAddress, {gas: env.network.gasAmount});
+        await crowdsale.buyTokens(
+            env.tests.accounts.secondBuyerAddress
+             , {from: env.tests.accounts.secondBuyerAddress, value: web3.toWei("1", "ether"), gas: env.network.gasAmount});
+
+        const endBalance = await token.balanceOf(env.tests.accounts.secondBuyerAddress, {gas: env.network.gasAmount});
+        
+        assert.equal(form18DecimalsTo1(endBalance)-form18DecimalsTo1(startBalance), 5000, "Balance does not match");
+
+        await crowdsale.setPrice(web3.toWei("65", "finney"), {gas: env.network.gasAmount});
     });
     
 

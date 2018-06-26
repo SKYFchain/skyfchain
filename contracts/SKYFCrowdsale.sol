@@ -22,7 +22,7 @@ contract SKYFCrowdsale is Ownable{
     /**
      * @dev price for one token in USD in attodollars
      */
-    uint256 public constant usdPrice = 65 * 10 ** 15;
+    uint256 public usdPrice = 65 * 10 ** 15;
     
     /**
      * @dev price for one ETH in USD in cents
@@ -100,7 +100,8 @@ contract SKYFCrowdsale is Ownable{
     * @param _etherUSDRate Exchange rate ether to USD in cents
     */
     function setRate(uint256 _etherUSDRate) public notEnded onlyOwner {
-        // Don't allow to change rate drastically.
+        require(_etherUSDRate != 0);
+        // Don't allow to change rate drastically(protection from dimension error)
         require(etherUSDRate == 0 || _etherUSDRate.div(etherUSDRate) < 100 && etherUSDRate.div(_etherUSDRate) < 100);
 
         uint256 localRate = _etherUSDRate.mul(10 ** 16);
@@ -109,6 +110,21 @@ contract SKYFCrowdsale is Ownable{
         etherUSDRate = _etherUSDRate;
         
         rate = localRate.div(usdPrice);
+    }
+
+
+    /**
+    * @dev function changing token price
+    * @param _usdPrice Token price in attodollars 
+    */
+    function setPrice(uint256 _usdPrice) public notEnded onlyOwner {
+        require(_usdPrice != 0);
+        // Don't allow to change price drastically(protection from dimension error)
+        require(usdPrice == 0 || _usdPrice.div(usdPrice) < 100 && usdPrice.div(_usdPrice) < 100);
+        rate = rate.mul(usdPrice).div(_usdPrice);
+        usdPrice = _usdPrice;
+
+        
     }
 
     /**
