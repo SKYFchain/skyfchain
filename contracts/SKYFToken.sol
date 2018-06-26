@@ -320,10 +320,10 @@ contract SKYFToken is Ownable {
         require(balances[_beneficiary] == 0 || isAirdrop(_beneficiary));
 
         if (shortenedAirdrop[_beneficiary] != 0) {
-            shortenedAirdrop[_beneficiary] += _amount;
+            shortenedAirdrop[_beneficiary] = shortenedAirdrop[_beneficiary].add(_amount);
         }
         else {
-            airdrop[_beneficiary] = airdrop[_beneficiary] + _amount;
+            airdrop[_beneficiary] = airdrop[_beneficiary].add(_amount);
         }
         _transferFrom(_who, crowdsaleWallet, _beneficiary, _amount);
         
