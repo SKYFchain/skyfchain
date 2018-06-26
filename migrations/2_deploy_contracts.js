@@ -10,37 +10,37 @@ module.exports = function(deployer, network) {
 
     console.log("Using env for network: '" + options.name + "'");
     
-    var ndfAdr, rfAdr, tfAdr, tokenAdr, crowdsaleAdr;
+    var ndfAddr, rfAddr, tfAddr, tokenAddr, crowdsaleAddr;
     deployer.deploy(SKYFNetworkDevelopmentFund).then(function() {
-        ndfAdr = SKYFNetworkDevelopmentFund.address;
+        ndfAddr = SKYFNetworkDevelopmentFund.address;
         return deployer.deploy(SKYFReserveFund).then(function() {
-            rfAdr = SKYFReserveFund.address;
+            rfAddr = SKYFReserveFund.address;
             return deployer.deploy(SKYFTeamFund).then(function() {
-                tfAdr = SKYFTeamFund.address;
+                tfAddr = SKYFTeamFund.address;
                 return deployer.deploy(SKYFToken
                     , options.accounts.crowdsaleWallet
-                    , ndfAdr
+                    , ndfAddr
                     , options.accounts.communityDevelopmentWallet
-                    , rfAdr
+                    , rfAddr
                     , options.accounts.bountyWallet
-                    , tfAdr
+                    , tfAddr
                     , options.accounts.siteAccount).then(function() {
-                    tokenAdr = SKYFToken.address;
-                    ndf = SKYFNetworkDevelopmentFund.at(ndfAdr);
-                    return ndf.setToken(tokenAdr).then(function() {
-                        tf = SKYFTeamFund.at(tfAdr);
-                        return tf.setToken(tokenAdr).then(function() {
-                            rf = SKYFReserveFund.at(rfAdr);
-                            return rf.setToken(tokenAdr).then(function () {
+                    tokenAddr = SKYFToken.address;
+                    ndf = SKYFNetworkDevelopmentFund.at(ndfAddr);
+                    return ndf.setToken(tokenAddr).then(function() {
+                        tf = SKYFTeamFund.at(tfAddr);
+                        return tf.setToken(tokenAddr).then(function() {
+                            rf = SKYFReserveFund.at(rfAddr);
+                            return rf.setToken(tokenAddr).then(function () {
                                 return deployer.deploy(SKYFCrowdsale
                                     , options.ETHUSD
                                     , options.accounts.crowdsaleWallet
                                     , options.accounts.etherWallet
                                     , options.accounts.siteAccount
-                                    , tokenAdr).then(function() {
-                                        crowdsaleAdr = SKYFCrowdsale.address;
-                                        token = SKYFToken.at(tokenAdr);
-                                        return token.setCrowdsaleContractAddress(crowdsaleAdr).catch(function(e) {
+                                    , tokenAddr).then(function() {
+                                        crowdsaleAddr = SKYFCrowdsale.address;
+                                        token = SKYFToken.at(tokenAddr);
+                                        return token.setCrowdsaleContractAddress(crowdsaleAddr).catch(function(e) {
                                             console.error(e);
                                         })
                                     }).catch(function(e) {
