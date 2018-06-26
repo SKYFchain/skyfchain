@@ -25,6 +25,4 @@ contract SKYFTeamFund is Ownable{
         token.transfer(_to, _value);
 
     }
-
-
 }

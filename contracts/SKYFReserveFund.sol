@@ -25,6 +25,4 @@ contract SKYFReserveFund is Ownable{
         token.transfer(_to, _value);
 
     }
-
-
 }

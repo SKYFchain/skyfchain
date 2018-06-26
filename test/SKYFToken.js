@@ -10,7 +10,6 @@ var env = require("../env.js");
 
 contract('SKYFToken', function() {
     let token, crowdsale, ndf, rf, tf
-    let me
     let endDate = new Date(1534334400*1000);
     let shortenedAirdropDate = new Date(1534334400*1000 + 182*60*60*24*1000);
     let airdropDate = new Date(1534334400*1000 + 365*60*60*24*1000);
@@ -23,9 +22,6 @@ contract('SKYFToken', function() {
     const rfInitial = 114000000;    
     const bfInitial = 18000000;
     const tfInitial = 240000000;
-
-    const crowdsaleAllowance = 400000000;
-    const siteAccountAllowance = 128000000;
 
     function form18DecimalsTo1(source) {
         return source.dividedBy(new BigNumber(10).pow(18)).toNumber();
@@ -74,12 +70,6 @@ contract('SKYFToken', function() {
         );
 
         await token.setCrowdsaleContractAddress(crowdsale.address, {from: env.tests.accounts.owner, gas: env.network.gasAmount});
-
-        await token.approve(crowdsale.address, web3.toWei(env.crowdsaleAllowance, "mether"), {from: env.development.accounts.crowdsaleWallet, gas: env.network.gasAmount});
-        await token.approve(env.development.accounts.siteAccount, web3.toWei(env.siteAccountAllowance, "mether"), {from: env.development.accounts.crowdsaleWallet, gas: env.network.gasAmount});
-
-
-
     });
 
     // START Check balances

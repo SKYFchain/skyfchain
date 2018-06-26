@@ -27,14 +27,16 @@ contract SKYFToken is Ownable {
     uint256 public constant shortAirdropTime = startTime + 182 days;
     
     
-    uint256 public totalSupply_;
+    uint256 public totalSupply_ = 1200 * 10 ** 24;
 
-    uint256 public crowdsaleSupply;
-    uint256 public networkDevelopmentSupply;
-    uint256 public communityDevelopmentSupply;
-    uint256 public reserveSupply;
-    uint256 public bountySupply;
-    uint256 public teamSupply; 
+    uint256 public constant crowdsaleSupply = 528 * 10 ** 24;
+    uint256 public constant networkDevelopmentSupply = 180 * 10 ** 24;
+    uint256 public constant communityDevelopmentSupply = 120 * 10 ** 24;
+    uint256 public constant reserveSupply = 114 * 10 ** 24; 
+    uint256 public constant bountySupply = 18 * 10 ** 24;
+    uint256 public constant teamSupply = 240 * 10 ** 24;
+    uint256 public constant crowdsaleAllowance = 400 * 10 ** 24;
+    uint256 public constant siteAccountAllowance = 128 * 10 ** 24;
 
     address public crowdsaleWallet;
     address public networkDevelopmentWallet;
@@ -46,7 +48,6 @@ contract SKYFToken is Ownable {
     
     address public crowdsaleContractAddress;
         
-    //TODO Need better variable name
     address public siteAccount;
 
     mapping (address => mapping (address => uint256)) allowed;
@@ -88,33 +89,22 @@ contract SKYFToken is Ownable {
 
         siteAccount = _siteAccount;
 
-         // 1200 millions of token overall
-        totalSupply_ = 1200 * 10 ** 24;
-
         // Issue 528 millions crowdsale tokens
-        crowdsaleSupply = 528 * 10 ** 24;
         _issueTokens(crowdsaleWallet, crowdsaleSupply);
 
-
-
         // Issue 180 millions network development tokens
-        networkDevelopmentSupply = 180 * 10 ** 24;
         _issueTokens(networkDevelopmentWallet, networkDevelopmentSupply);
 
         // Issue 120 millions community development tokens
-        communityDevelopmentSupply = 120 * 10 ** 24;
         _issueTokens(communityDevelopmentWallet, communityDevelopmentSupply);
 
         // Issue 114 millions reserve tokens
-        reserveSupply = 114 * 10 ** 24;
         _issueTokens(reserveWallet, reserveSupply);
 
         // Issue 18 millions bounty tokens
-        bountySupply = 18 * 10 ** 24;
         _issueTokens(bountyWallet, bountySupply);
 
         // Issue 240 millions team tokens
-        teamSupply = 240 * 10 ** 24;
         _issueTokens(teamWallet, teamSupply);
     }
 
@@ -140,13 +130,12 @@ contract SKYFToken is Ownable {
         _;
     }
     
-    function setCrowdsaleContractAddress(address _address) public onlyOwner returns (bool result) {
+    function setCrowdsaleContractAddress(address _address) public onlyOwner {
         require(_address != address(0));
-        if (crowdsaleContractAddress == address(0)) {
-            crowdsaleContractAddress = _address;
-            return true;
-        }
-        return false;
+        require(crowdsaleContractAddress == address(0));
+        crowdsaleContractAddress = _address;
+        allowed[crowdsaleWallet][_address] = crowdsaleAllowance;
+        allowed[crowdsaleWallet][siteAccount] = siteAccountAllowance;
     }
 
     /**
@@ -353,6 +342,5 @@ contract SKYFToken is Ownable {
             }
         }
     }
-
-    
+   
 }

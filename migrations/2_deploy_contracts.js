@@ -40,17 +40,7 @@ module.exports = function(deployer, network) {
                                     , tokenAdr).then(function() {
                                         crowdsaleAdr = SKYFCrowdsale.address;
                                         token = SKYFToken.at(tokenAdr);
-                                        return token.setCrowdsaleContractAddress(crowdsaleAdr).then(function() {
-                                            return token.approve(crowdsaleAdr
-                                                , web3.toWei(env.crowdsaleAllowance, "mether")
-                                                , {from: options.accounts.crowdsaleWallet}).then(function() {
-                                                    return token.approve(options.accounts.siteAccount
-                                                        , web3.toWei(env.siteAccountAllowance, "mether")
-                                                        , {from: options.accounts.crowdsaleWallet})
-                                                }).catch(function(e) {
-                                                    console.error(e);
-                                                })
-                                        }).catch(function(e) {
+                                        return token.setCrowdsaleContractAddress(crowdsaleAdr).catch(function(e) {
                                             console.error(e);
                                         })
                                     }).catch(function(e) {

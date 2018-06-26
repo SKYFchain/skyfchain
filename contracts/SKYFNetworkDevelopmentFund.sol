@@ -43,6 +43,4 @@ contract SKYFNetworkDevelopmentFund is Ownable{
         token.transfer(_to, _value);
 
     }
-
-
 }
