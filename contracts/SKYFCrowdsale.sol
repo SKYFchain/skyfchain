@@ -20,17 +20,17 @@ contract SKYFCrowdsale is Ownable{
     uint256 public constant endTime = 1534334400;
 
     /**
-     * @dev price for one token in USD
+     * @dev price for one token in USD in attodollars
      */
-    uint256 public constant dollarPrice = 65 * 10 ** 15;//in attodollars
+    uint256 public constant usdPrice = 65 * 10 ** 15;
     
     /**
-     * @dev price for one ETH in USD
+     * @dev price for one ETH in USD in cents
      */    
-    uint256 public etherDollarRate;
+    uint256 public etherUSDRate;
 
     /**
-     * @dev amount of tokens for 1 wei
+     * @dev amount of tokens for 1 ETH
      */
     uint256 public rate;
 
@@ -76,18 +76,18 @@ contract SKYFCrowdsale is Ownable{
     event AirDrop(address indexed beneficiary, uint256 amount);
     
     /**
-    * @param _etherDollarRate Exchange rate ether to USD
+    * @param _etherUSDRate Exchange rate ether to USD in cents
     * @param _tokenWallet Address holding the tokens, which has approved allowance to the crowdsale
     * @param _siteAccount Address of site account
     * @param _token Address of the token being sold
     */
-    constructor(uint256 _etherDollarRate, address _tokenWallet, address _etherWallet, address _siteAccount, address _token) public {
+    constructor(uint256 _etherUSDRate, address _tokenWallet, address _etherWallet, address _siteAccount, address _token) public {
         require(_token != address(0));
         require(_tokenWallet != address(0));
         require(_siteAccount != address(0));
         require(_etherWallet != address(0));
     
-        setRate(_etherDollarRate);
+        setRate(_etherUSDRate);
         token = SKYFTokenInterface(_token);
         tokenWallet = _tokenWallet;
         etherWallet = _etherWallet;
@@ -97,14 +97,18 @@ contract SKYFCrowdsale is Ownable{
 
     /**
     * @dev function changing ether to USD exchange rate
-    * @param _etherDollarRate Exchange rate ether to USD
+    * @param _etherUSDRate Exchange rate ether to USD in cents
     */
-    function setRate(uint256 _etherDollarRate) public notEnded onlyOwner {
-        uint256 localRate = _etherDollarRate.mul(10 ** 16);
-        require(localRate >= dollarPrice);
+    function setRate(uint256 _etherUSDRate) public notEnded onlyOwner {
+        // Don't allow to change rate drastically.
+        require(etherUSDRate == 0 || _etherUSDRate.div(etherUSDRate) < 100 && etherUSDRate.div(_etherUSDRate) < 100);
 
-        etherDollarRate = localRate;
-        rate = etherDollarRate.div(dollarPrice);
+        uint256 localRate = _etherUSDRate.mul(10 ** 16);
+        require(localRate >= usdPrice);
+
+        etherUSDRate = _etherUSDRate;
+        
+        rate = localRate.div(usdPrice);
     }
 
     /**
