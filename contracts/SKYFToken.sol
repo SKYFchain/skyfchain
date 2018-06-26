@@ -162,10 +162,10 @@ contract SKYFToken is Ownable {
     */
     function transfer(address _to, uint256 _value) public erc20Allowed returns (bool) {
         require(_to != address(0));
-
+        require(_value <= balances[msg.sender]);
         require(_airdropUnlocked(_to));
 
-        // SafeMath.sub will throw if there is not enough balance.
+        
         balances[msg.sender] = balances[msg.sender].sub(_value);
         balances[_to] = balances[_to].add(_value);
         emit Transfer(msg.sender, _to, _value);
@@ -184,14 +184,12 @@ contract SKYFToken is Ownable {
 
     function _transferFrom(address _who, address _from, address _to, uint256 _value) internal returns (bool) {
         require(_to != address(0));
+        require(_value <= balances[_from]);
         require(_airdropUnlocked(_to) || _from == crowdsaleWallet);
-        
-        
 
         uint256 _allowance = allowed[_from][_who];
 
-        // Check is not needed because sub(_allowance, _value) will already throw if this condition is not met
-        // require (_value <= _allowance);
+        require(_value <= _allowance);
 
         balances[_from] = balances[_from].sub(_value);
         balances[_to] = balances[_to].add(_value);
