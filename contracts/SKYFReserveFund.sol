@@ -4,8 +4,8 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./SKYFTokenInterface.sol";
 
 contract SKYFReserveFund is Ownable{
-    uint public constant startTime = 1534334400;
-    uint public firstYearEnd = startTime + 365 days;
+    uint256 public constant startTime = 1534334400;
+    uint256 public constant firstYearEnd = startTime + 365 days;
     
     SKYFTokenInterface public token;
 

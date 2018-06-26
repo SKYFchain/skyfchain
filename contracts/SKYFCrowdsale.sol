@@ -17,7 +17,7 @@ contract SKYFCrowdsale is Ownable{
     /**
      * @dev ICO end time which is Wednesday, August 15, 2018 12:00:00 PM GMT
      */
-    uint public constant endTime = 1534334400;
+    uint256 public constant endTime = 1534334400;
 
     /**
      * @dev price for one token in USD

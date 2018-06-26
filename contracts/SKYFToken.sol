@@ -10,7 +10,6 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 */
 contract SKYFToken is Ownable {
     using SafeMath for uint256;
-    using SafeMath for uint;
     
     enum State {Active, Finalized}
     State public state = State.Active;
@@ -23,9 +22,9 @@ contract SKYFToken is Ownable {
     string public constant symbol = "SKYFT";
     uint8 public decimals = 18;
 
-    uint public constant startTime = 1534334400;
-    uint public airdropTime = startTime + 365 days;
-    uint public shortAirdropTime = startTime + 182 days;
+    uint256 public constant startTime = 1534334400;
+    uint256 public constant airdropTime = startTime + 365 days;
+    uint256 public constant shortAirdropTime = startTime + 182 days;
     
     
     uint256 public totalSupply_;
@@ -249,7 +248,7 @@ contract SKYFToken is Ownable {
      * @param _spender The address which will spend the funds.
      * @param _addedValue The amount of tokens to increase the allowance by.
     */
-    function increaseApproval(address _spender, uint _addedValue) public erc20Allowed returns (bool) {
+    function increaseApproval(address _spender, uint256 _addedValue) public erc20Allowed returns (bool) {
         allowed[msg.sender][_spender] = (allowed[msg.sender][_spender].add(_addedValue));
         emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
         return true;
@@ -265,8 +264,8 @@ contract SKYFToken is Ownable {
      * @param _spender The address which will spend the funds.
      * @param _subtractedValue The amount of tokens to decrease the allowance by.
     */
-    function decreaseApproval(address _spender, uint _subtractedValue) public erc20Allowed returns (bool) {
-        uint oldValue = allowed[msg.sender][_spender];
+    function decreaseApproval(address _spender, uint256 _subtractedValue) public erc20Allowed returns (bool) {
+        uint256 oldValue = allowed[msg.sender][_spender];
         if (_subtractedValue > oldValue) {
             allowed[msg.sender][_spender] = 0;
         } else {

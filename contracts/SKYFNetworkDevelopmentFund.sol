@@ -7,9 +7,9 @@ import "./SKYFToken.sol";
 contract SKYFNetworkDevelopmentFund is Ownable{
     using SafeMath for uint256;
 
-    uint public constant startTime = 1534334400;
-    uint public firstYearEnd = startTime + 365 days;
-    uint public secondYearEnd = firstYearEnd + 365 days;
+    uint256 public constant startTime = 1534334400;
+    uint256 public constant firstYearEnd = startTime + 365 days;
+    uint256 public constant secondYearEnd = firstYearEnd + 365 days;
     
     uint256 public initialSupply;
     SKYFToken public token;
