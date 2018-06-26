@@ -109,6 +109,7 @@ contract SKYFToken is Ownable {
     }
 
     function _issueTokens(address _to, uint256 _amount) internal {
+        require(balances[_to] == 0);
         balances[_to] = balances[_to].add(_amount);
         emit Transfer(address(0), _to, _amount);
     }
