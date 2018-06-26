@@ -27,16 +27,13 @@ contract SKYFNetworkDevelopmentFund is Ownable{
         require(_to != address(0));
         require(now > startTime);
         uint256 balance = token.balanceOf(this);
-        if (initialSupply == 0)
-        {
+        if (initialSupply == 0) {
             initialSupply = balance;
         }
         
         if (now < firstYearEnd) {
             require(balance.sub(_value).mul(2) >= initialSupply); //no less than 50%(1/2) should be left on account after first year
-        }
-
-        if (now < secondYearEnd) {
+        } else if (now < secondYearEnd) {
             require(balance.sub(_value).mul(20) >= initialSupply.mul(3)); //no less than 15%(3/20) should be left on account after second year
         }
 
