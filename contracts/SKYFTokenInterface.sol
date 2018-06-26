@@ -7,6 +7,5 @@ contract SKYFTokenInterface {
     function isAirdrop(address _who) public view returns (bool result);
     function recalculateAirdrop(address _who) public;
     function finalize() public;
-    function addAirdrop(address _wgi, address _beneficiary, uint256 _amount) public;
-    function burnWallet(address _wallet, uint256 _amount) public;
+    function addAirdrop(address _who, address _beneficiary, uint256 _amount) public;
 }

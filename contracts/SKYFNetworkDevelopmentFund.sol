@@ -2,7 +2,7 @@ pragma solidity ^0.4.23;
 
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
-import "./SKYFToken.sol";
+import "./SKYFTokenInterface.sol";
 
 contract SKYFNetworkDevelopmentFund is Ownable{
     using SafeMath for uint256;
@@ -12,12 +12,12 @@ contract SKYFNetworkDevelopmentFund is Ownable{
     uint256 public constant secondYearEnd = firstYearEnd + 365 days;
     
     uint256 public initialSupply;
-    SKYFToken public token;
+    SKYFTokenInterface public token;
 
     function setToken(address _token) public onlyOwner returns (bool) {
         require(_token != address(0));
         if (token == address(0)) {
-            token = SKYFToken(_token);
+            token = SKYFTokenInterface(_token);
             return true;
         }
         return false;
