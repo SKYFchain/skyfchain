@@ -1,7 +1,6 @@
 /* jshint ignore: start */
 
 var SKYFToken = artifacts.require("./SKYFToken.sol");
-var SKYFCrowdsale = artifacts.require("./SKYFCrowdsale.sol")
 var SKYFNetworkDevelopmentFund = artifacts.require("./SKYFNetworkDevelopmentFund.sol")
 var SKYFReserveFund = artifacts.require("./SKYFReserveFund.sol")
 var SKYFTeamFund = artifacts.require("./SKYFTeamFund.sol")
@@ -9,7 +8,7 @@ var BigNumber = require("bignumber.js");
 var env = require("../env.js");
 
 contract('SKYFToken', function() {
-    let token, crowdsale, ndf, rf, tf, owner;
+    let token, ndf, rf, tf;
     let endDate = new Date(1534334400*1000);
     let shortenedAirdropDate = new Date(1534334400*1000 + 182*60*60*24*1000);
     let airdropDate = new Date(1534334400*1000 + 365*60*60*24*1000);
@@ -43,7 +42,6 @@ contract('SKYFToken', function() {
         rf = await SKYFReserveFund.deployed();
         tf = await SKYFTeamFund.deployed();
         token = await SKYFToken.deployed();
-        crowdsale = await SKYFCrowdsale.deployed();
     });
 
     // START Check balances
@@ -168,50 +166,21 @@ contract('SKYFToken', function() {
         
     });
 
-    it('Check whitelist', async() => {
-        var exRaised = false;
-        try {
-            await crowdsale.buyTokens(
-                env.tests.accounts.thirdBuyerAddress
-                , {from: env.tests.accounts.thirdBuyerAddress, value: web3.toWei("1", "ether"), gas: env.network.gasAmount});
-                assert.equal(true, false, "Missing exception for non-whitelisted buyer");
-        }
-        catch (e) { exRaised = true }
-        assert.equal(exRaised, true, "Missing exception");
-
-        exRaised = false;
-
-        await crowdsale.addToWhitelist(env.tests.accounts.thirdBuyerAddress, {gas: env.network.gasAmount})
-
-        await crowdsale.buyTokens(
-            env.tests.accounts.thirdBuyerAddress
-            , {from: env.tests.accounts.thirdBuyerAddress, value: web3.toWei("1", "ether"), gas: env.network.gasAmount});
-        
-
-        await crowdsale.removeFromWhitelist(env.tests.accounts.thirdBuyerAddress, {gas: env.network.gasAmount})
-        try {
-            await crowdsale.buyTokens(
-                env.tests.accounts.thirdBuyerAddress
-                , {from: env.tests.accounts.thirdBuyerAddress, value: web3.toWei("1", "ether"), gas: env.network.gasAmount});
-        } catch (e) { exRaised = true }
-        assert.equal(exRaised, true, "Missing exception");
-    });
-
     //BEGIN airdrop
     it('Create airdrop', async() => {
         var initialAllowance = await token.allowance(
             env.development.accounts.crowdsaleWallet,
-            crowdsale.address,
+            env.development.accounts.siteAccount,
             {gas: env.network.gasAmount});
 
-        await crowdsale.createAirdrop(
+        await token.addAirdrop(
             env.tests.accounts.firstAirdropAddress
             , web3.toWei("100", "kether")
-            , {gas: env.network.gasAmount});
+            , {from: env.development.accounts.siteAccount,gas: env.network.gasAmount});
 
         var currentAllowance = await token.allowance(
             env.development.accounts.crowdsaleWallet,
-            crowdsale.address,
+            env.development.accounts.siteAccount,
             {gas: env.network.gasAmount});
         
         assert.equal(form18DecimalsTo1(initialAllowance)-form18DecimalsTo1(currentAllowance), 100000, "Wrong allowance change")
@@ -220,75 +189,68 @@ contract('SKYFToken', function() {
 
         assert.equal(form18DecimalsTo1(balance), 100000, "Wrong balance")
     
-        //check for whitelist
-        await crowdsale.buyTokens(
-             env.tests.accounts.firstAirdropAddress
-             , {from: env.tests.accounts.fourthAirdropAddress, value: web3.toWei("1", "ether"), gas: env.network.gasAmount});
-
         //check isAirdrop
         const isAirdrop = await token.isAirdrop(env.tests.accounts.firstAirdropAddress, {gas: env.network.gasAmount});
         assert.equal(isAirdrop, true, "Not added to airdrop");
     });
 
-    it('Create airdrop from site account', async() => {
-        var initialAllowance = await token.allowance(
-            env.development.accounts.crowdsaleWallet,
-            env.development.accounts.siteAccount,
-            {gas: env.network.gasAmount});
-
-        await crowdsale.createAirdrop(
-            env.tests.accounts.secondAirdropAddress
-            , web3.toWei("100", "kether")
-            , {from: env.development.accounts.siteAccount, gas: env.network.gasAmount});
-
-        var currentAllowance = await token.allowance(
-            env.development.accounts.crowdsaleWallet,
-            env.development.accounts.siteAccount,
-            {gas: env.network.gasAmount});
-        
-        assert.equal(form18DecimalsTo1(initialAllowance)-form18DecimalsTo1(currentAllowance), 100000, "Wrong allowance change")
-
-        //shorten airdrop
-        await crowdsale.buyTokens(
-            env.tests.accounts.secondAirdropAddress
-            , {from: env.tests.accounts.secondAirdropAddress, value: web3.toWei("10", "ether"), gas: env.network.gasAmount});
-    });
-
     it('Create airdrop and pay 3x extra', async() => {
-        await crowdsale.createAirdrop(
+        await token.addAirdrop(
             env.tests.accounts.thirdAirdropAddress
             , web3.toWei("100", "kether")
             , {gas: env.network.gasAmount});
 
         //leave airdrop list
-        await crowdsale.buyTokens(
-            env.tests.accounts.thirdAirdropAddress
-             , {from: env.tests.accounts.thirdAirdropAddress, value: web3.toWei("30", "ether"), gas: env.network.gasAmount});
+        await token.transferFrom(
+            env.development.accounts.crowdsaleWallet,
+            env.tests.accounts.thirdAirdropAddress,
+            web3.toWei("300", "kether"),
+            {from: env.development.accounts.siteAccount, gas: env.network.gasAmount});
 
         const isAirdrop = await token.isAirdrop(env.tests.accounts.thirdAirdropAddress, {gas: env.network.gasAmount});
         assert.equal(isAirdrop, false, "Not removed from airdrop");
  
     });
 
+    it('Create airdrop and shorten it', async() => {
+        await token.addAirdrop(
+            env.tests.accounts.secondAirdropAddress
+            , web3.toWei("100", "kether")
+            , {gas: env.network.gasAmount});
+
+        //shorten airdrop
+        await token.transferFrom(
+            env.development.accounts.crowdsaleWallet,
+            env.tests.accounts.secondAirdropAddress,
+            web3.toWei("100", "kether"),
+            {gas: env.network.gasAmount});
+
+    });
+
+
     it('Create airdrop and pay 3x extra in 2 steps', async() => {
-        await crowdsale.createAirdrop(
+        await token.addAirdrop(
             env.tests.accounts.fourthAirdropAddress
             , web3.toWei("100", "kether")
             , {gas: env.network.gasAmount});
 
         //to shortened airdrop list
-        await crowdsale.buyTokens(
-            env.tests.accounts.fourthAirdropAddress
-             , {from: env.tests.accounts.fourthAirdropAddress, value: web3.toWei("20", "ether"), gas: env.network.gasAmount});
+        await token.transferFrom(
+            env.development.accounts.crowdsaleWallet,
+            env.tests.accounts.fourthAirdropAddress,
+            web3.toWei("200", "kether"),
+            {from: env.development.accounts.siteAccount, gas: env.network.gasAmount});
 
         var isAirdrop = await token.isAirdrop(env.tests.accounts.fourthAirdropAddress, {gas: env.network.gasAmount});
         assert.equal(isAirdrop, true, "Removed from airdrop");
 
         //remove from airdrop list
-        await crowdsale.buyTokens(
-            env.tests.accounts.fourthAirdropAddress
-             , {from: env.tests.accounts.fourthAirdropAddress, value: web3.toWei("15", "ether"), gas: env.network.gasAmount});
-
+        await token.transferFrom(
+            env.development.accounts.crowdsaleWallet,
+            env.tests.accounts.fourthAirdropAddress,
+            web3.toWei("150", "kether"),
+            {from: env.development.accounts.siteAccount, gas: env.network.gasAmount});
+             
         isAirdrop = await token.isAirdrop(env.tests.accounts.fourthAirdropAddress, {gas: env.network.gasAmount});
         assert.equal(isAirdrop, false, "Not removed from airdrop");
  
@@ -296,57 +258,11 @@ contract('SKYFToken', function() {
 
     //END Airdrop
 
-    it('Check set rate', async() => {
-        await crowdsale.setRate(32500, {gas: env.network.gasAmount});
-        await crowdsale.addToWhitelist(env.tests.accounts.secondBuyerAddress, {gas: env.network.gasAmount});
-
-        const startBalance = await token.balanceOf(env.tests.accounts.secondBuyerAddress, {gas: env.network.gasAmount});
-        await crowdsale.buyTokens(
-            env.tests.accounts.secondBuyerAddress
-             , {from: env.tests.accounts.secondBuyerAddress, value: web3.toWei("1", "ether"), gas: env.network.gasAmount});
-
-        const endBalance = await token.balanceOf(env.tests.accounts.secondBuyerAddress, {gas: env.network.gasAmount});
-        
-        assert.equal(form18DecimalsTo1(endBalance)-form18DecimalsTo1(startBalance), 5000, "Balance does not match");
-
-        await crowdsale.setRate(env.development.ETHUSD, {gas: env.network.gasAmount});
-    });
-    
-
-    it('Check set price', async() => {
-        await crowdsale.setPrice(web3.toWei("130", "finney"), {gas: env.network.gasAmount});
-
-        const startBalance = await token.balanceOf(env.tests.accounts.secondBuyerAddress, {gas: env.network.gasAmount});
-        await crowdsale.buyTokens(
-            env.tests.accounts.secondBuyerAddress
-             , {from: env.tests.accounts.secondBuyerAddress, value: web3.toWei("1", "ether"), gas: env.network.gasAmount});
-
-        const endBalance = await token.balanceOf(env.tests.accounts.secondBuyerAddress, {gas: env.network.gasAmount});
-        
-        assert.equal(form18DecimalsTo1(endBalance)-form18DecimalsTo1(startBalance), 5000, "Balance does not match");
-
-        await crowdsale.setPrice(web3.toWei("65", "finney"), {gas: env.network.gasAmount});
-    });
-    
-
-    it('Check transfer of ether', async() => {
-        const startBalance = await web3.eth.getBalance(env.development.accounts.etherWallet);
-        
-        await crowdsale.buyTokens(
-             env.tests.accounts.secondBuyerAddress
-             , {from: env.tests.accounts.secondBuyerAddress, value: web3.toWei("1", "ether"), gas: env.network.gasAmount});
-        
-        const endBalance = await web3.eth.getBalance(env.development.accounts.etherWallet);
-        
-        assert.equal(form18DecimalsTo1(endBalance)-form18DecimalsTo1(startBalance), 1, "Wrong ether wallet balance");
-
-    });
-
 
     it('Finalize before end time', async() => {
         var exRaised = false;
         try {
-            await crowdsale.finalize({gas: env.network.gasAmount});
+            await token.finalize({gas: env.network.gasAmount});
             
         }
         catch (e) { exRaised = true; }
@@ -369,37 +285,11 @@ contract('SKYFToken', function() {
     // END OtherFunds
 
         
-    it('Move time and check notEnded modifier', async() => {
-        quantumLeap(new Date(), endDate);
-
-        var exRaised = false;
-        try {
-            await crowdsale.buyTokens(
-            env.tests.accounts.firstAirdropAddress
-            , {from: env.tests.accounts.firstAirdropAddress, value: web3.toWei("1", "ether"), gas: env.network.gasAmount});
-
-        }
-        catch (e) { exRaised = true; }
-        assert.equal(exRaised, true, "Missing exception");
-    });
-
-    
-
 
     it('Finalize', async() => {
+        quantumLeap(new Date(), endDate);
         //Check that contract exists
-        await crowdsale.rate.call({gas: env.network.gasAmount});
-
-        
-        await crowdsale.finalize({gas: env.network.gasAmount});
-
-        var exRaised = false;
-        //Check that contract is killed
-        try {
-            await crowdsale.rate.call({gas: env.network.gasAmount});
-        }
-        catch (e) { exRaised = true; }
-        assert.equal(exRaised, true, "Missing exception");
+        await token.finalize({gas: env.network.gasAmount});
     });
 
 
@@ -407,9 +297,7 @@ contract('SKYFToken', function() {
     it('Check finalization', async() => {
         var percentageToLeave = (
             100000 //firstBuyer
-            +20000 //secondBuyer
-            +10000 //thirdBuyer
-            +110000 //firstAirdrop
+            +100000 //firstAirdrop
             +200000 //secondAirdrop
             +400000 //thirdAirdrop
             +450000 //fourthAirdrop
@@ -442,7 +330,7 @@ contract('SKYFToken', function() {
 
     it('Check transfer from one address to another address', async() => {
 
-        var appr = await token.approve(
+        await token.approve(
             env.tests.accounts.secondBuyerAddress, 
             web3.toWei("10", "kether"),
             {from: env.tests.accounts.firstBuyerAddress, gas: env.network.gasAmount}

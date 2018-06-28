@@ -35,8 +35,7 @@ contract SKYFToken is Ownable {
     uint256 public constant reserveSupply = 114 * 10 ** 24; 
     uint256 public constant bountySupply = 18 * 10 ** 24;
     uint256 public constant teamSupply = 240 * 10 ** 24;
-    uint256 public constant crowdsaleAllowance = 400 * 10 ** 24;
-    uint256 public constant siteAccountAllowance = 128 * 10 ** 24;
+    uint256 public constant siteAccountAllowance = 528 * 10 ** 24;
 
     address public crowdsaleWallet;
     address public networkDevelopmentWallet;
@@ -45,9 +44,6 @@ contract SKYFToken is Ownable {
     address public bountyWallet;
     address public teamWallet;
 
-    
-    address public crowdsaleContractAddress;
-        
     address public siteAccount;
 
     mapping (address => mapping (address => uint256)) allowed;
@@ -60,6 +56,7 @@ contract SKYFToken is Ownable {
     event Transfer(address indexed from, address indexed to, uint256 value);
     event Approval(address indexed owner, address indexed spender, uint256 value);
     event Burn(address indexed burner, uint256 value);
+    event Airdrop(address indexed beneficiary, uint256 amount);
 
     /**
      * @dev Contract constructor
@@ -106,6 +103,9 @@ contract SKYFToken is Ownable {
 
         // Issue 240 millions team tokens
         _issueTokens(teamWallet, teamSupply);
+
+        allowed[crowdsaleWallet][siteAccount] = siteAccountAllowance;
+        allowed[crowdsaleWallet][owner] = siteAccountAllowance;
     }
 
     function _issueTokens(address _to, uint256 _amount) internal {
@@ -121,22 +121,25 @@ contract SKYFToken is Ownable {
     }
 
     modifier erc20Allowed() {
-        require(state == State.Finalized || msg.sender == crowdsaleContractAddress || msg.sender == siteAccount || msg.sender == crowdsaleWallet);
+        require(state == State.Finalized || msg.sender == owner|| msg.sender == siteAccount || msg.sender == crowdsaleWallet);
         require (_airdropUnlocked(msg.sender));
         _;
     }
 
-    modifier onlyCrowdsaleContract() {
-        require(msg.sender == crowdsaleContractAddress);
+    modifier onlyOwnerOrSiteAccount() {
+        require(msg.sender == owner || msg.sender == siteAccount);
         _;
     }
     
-    function setCrowdsaleContractAddress(address _address) public onlyOwner {
+    function setSiteAccountAddress(address _address) public onlyOwner {
         require(_address != address(0));
-        require(crowdsaleContractAddress == address(0));
-        crowdsaleContractAddress = _address;
-        allowed[crowdsaleWallet][_address] = crowdsaleAllowance;
-        allowed[crowdsaleWallet][siteAccount] = siteAccountAllowance;
+
+        uint256 allowance = allowed[crowdsaleWallet][siteAccount];
+        allowed[crowdsaleWallet][siteAccount] = 0;
+
+        allowed[crowdsaleWallet][_address] = allowed[crowdsaleWallet][_address].add(allowance);
+
+        siteAccount = _address;
     }
 
     /**
@@ -169,6 +172,9 @@ contract SKYFToken is Ownable {
         
         balances[msg.sender] = balances[msg.sender].sub(_value);
         balances[_to] = balances[_to].add(_value);
+
+        _recalculateAirdrop(_to);
+
         emit Transfer(msg.sender, _to, _value);
         return true;
     }
@@ -195,6 +201,9 @@ contract SKYFToken is Ownable {
         balances[_from] = balances[_from].sub(_value);
         balances[_to] = balances[_to].add(_value);
         allowed[_from][_who] = _allowance.sub(_value);
+
+        _recalculateAirdrop(_to);
+
         emit Transfer(_from, _to, _value);
         return true;
     }
@@ -282,8 +291,9 @@ contract SKYFToken is Ownable {
         emit Transfer(_who, address(0), _value);
     }
 
-    function finalize() public onlyCrowdsaleContract {
+    function finalize() public onlyOwner {
         require(state == State.Active);
+        require(now > startTime);
         state = State.Finalized;
 
         uint256 crowdsaleBalance = balanceOf(crowdsaleWallet);
@@ -306,7 +316,7 @@ contract SKYFToken is Ownable {
         _burn(crowdsaleWallet, crowdsaleBalance);
     }
     
-    function addAirdrop(address _who, address _beneficiary, uint256 _amount) public onlyCrowdsaleContract {
+    function addAirdrop(address _beneficiary, uint256 _amount) public onlyOwnerOrSiteAccount {
         require(_beneficiary != crowdsaleWallet);
         require(_beneficiary != networkDevelopmentWallet);
         require(_beneficiary != communityDevelopmentWallet);
@@ -314,7 +324,7 @@ contract SKYFToken is Ownable {
         require(_beneficiary != bountyWallet);
         require(_beneficiary != teamWallet);
         require(_beneficiary != siteAccount);
-        require(_beneficiary != crowdsaleContractAddress);
+        
 
         //Don't allow to block already bought tokens with airdrop.
         require(balances[_beneficiary] == 0 || isAirdrop(_beneficiary));
@@ -325,30 +335,33 @@ contract SKYFToken is Ownable {
         else {
             airdrop[_beneficiary] = airdrop[_beneficiary].add(_amount);
         }
-        _transferFrom(_who, crowdsaleWallet, _beneficiary, _amount);
         
+        _transferFrom(msg.sender, crowdsaleWallet, _beneficiary, _amount);
+        emit Airdrop(_beneficiary, _amount);
     }
 
     function isAirdrop(address _who) public view returns (bool result) {
         return airdrop[_who] > 0 || shortenedAirdrop[_who] > 0;
     }
 
-    function recalculateAirdrop(address _who) public onlyCrowdsaleContract {
-        uint256 initialAmount = airdrop[_who];
-        if (initialAmount > 0) {
-            uint256 rate = balances[_who].div(initialAmount);
-            if (rate >= 4) {
-                delete airdrop[_who];
-            } else if (rate >= 2) {
-                delete airdrop[_who];
-                shortenedAirdrop[_who] = initialAmount;
-            }
-        } else {
-            initialAmount = shortenedAirdrop[_who];
+    function _recalculateAirdrop(address _who) internal {
+        if(state == State.Active && isAirdrop(_who)) {
+            uint256 initialAmount = airdrop[_who];
             if (initialAmount > 0) {
-                rate = balances[_who].div(initialAmount);
+                uint256 rate = balances[_who].div(initialAmount);
                 if (rate >= 4) {
-                    delete shortenedAirdrop[_who];
+                    delete airdrop[_who];
+                } else if (rate >= 2) {
+                    delete airdrop[_who];
+                    shortenedAirdrop[_who] = initialAmount;
+                }
+            } else {
+                initialAmount = shortenedAirdrop[_who];
+                if (initialAmount > 0) {
+                    rate = balances[_who].div(initialAmount);
+                    if (rate >= 4) {
+                        delete shortenedAirdrop[_who];
+                    }
                 }
             }
         }

@@ -1,5 +1,4 @@
 var SKYFToken = artifacts.require("./SKYFToken.sol");
-var SKYFCrowdsale = artifacts.require("./SKYFCrowdsale.sol");
 var SKYFNetworkDevelopmentFund = artifacts.require("./SKYFNetworkDevelopmentFund.sol");
 var SKYFReserveFund = artifacts.require("./SKYFReserveFund.sol");
 var SKYFTeamFund = artifacts.require("./SKYFTeamFund.sol");
@@ -31,22 +30,7 @@ module.exports = function(deployer, network) {
                         tf = SKYFTeamFund.at(tfAddr);
                         return tf.setToken(tokenAddr).then(function() {
                             rf = SKYFReserveFund.at(rfAddr);
-                            return rf.setToken(tokenAddr).then(function () {
-                                return deployer.deploy(SKYFCrowdsale
-                                    , options.ETHUSD
-                                    , options.accounts.crowdsaleWallet
-                                    , options.accounts.etherWallet
-                                    , options.accounts.siteAccount
-                                    , tokenAddr).then(function() {
-                                        crowdsaleAddr = SKYFCrowdsale.address;
-                                        token = SKYFToken.at(tokenAddr);
-                                        return token.setCrowdsaleContractAddress(crowdsaleAddr).catch(function(e) {
-                                            console.error(e);
-                                        })
-                                    }).catch(function(e) {
-                                        console.error(e);
-                                    })
-                            }).catch(function(e) {
+                            return rf.setToken(tokenAddr).catch(function(e) {
                                 console.error(e);
                             })
                         }).catch(function(e) {
