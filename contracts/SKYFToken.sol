@@ -18,7 +18,7 @@ contract SKYFToken is Ownable {
     /**
      * @dev ERC20 descriptor variables
      */
-    string public constant name = "SKYFChain";
+    string public constant name = "SKYFchain";
     string public constant symbol = "SKYFT";
     uint8 public decimals = 18;
 
