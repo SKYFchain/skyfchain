@@ -24,8 +24,6 @@ contract SKYFNetworkDevelopmentFund is Ownable{
     }
 
     function transfer(address _to, uint256 _value) public onlyOwner returns (bool) {
-        require(_to != address(0));
-        require(now > startTime);
         uint256 balance = token.balanceOf(this);
         if (initialSupply == 0) {
             initialSupply = balance;

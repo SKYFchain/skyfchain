@@ -19,7 +19,6 @@ contract SKYFReserveFund is Ownable{
     }
 
     function transfer(address _to, uint256 _value) public onlyOwner returns (bool) {
-        require(_to != address(0));
         require(now > firstYearEnd);
 
         token.transfer(_to, _value);

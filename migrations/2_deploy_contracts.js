@@ -9,7 +9,7 @@ module.exports = function(deployer, network) {
 
     console.log("Using env for network: '" + options.name + "'");
     
-    var ndfAddr, rfAddr, tfAddr, tokenAddr, crowdsaleAddr;
+    var ndfAddr, rfAddr, tfAddr, tokenAddr;
     deployer.deploy(SKYFNetworkDevelopmentFund).then(function() {
         ndfAddr = SKYFNetworkDevelopmentFund.address;
         return deployer.deploy(SKYFReserveFund).then(function() {

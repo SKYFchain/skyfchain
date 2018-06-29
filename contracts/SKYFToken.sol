@@ -35,7 +35,7 @@ contract SKYFToken is Ownable {
     uint256 public constant reserveSupply = 114 * 10 ** 24; 
     uint256 public constant bountySupply = 18 * 10 ** 24;
     uint256 public constant teamSupply = 240 * 10 ** 24;
-    uint256 public constant siteAccountAllowance = 528 * 10 ** 24;
+    
 
     address public crowdsaleWallet;
     address public networkDevelopmentWallet;
@@ -104,8 +104,8 @@ contract SKYFToken is Ownable {
         // Issue 240 millions team tokens
         _issueTokens(teamWallet, teamSupply);
 
-        allowed[crowdsaleWallet][siteAccount] = siteAccountAllowance;
-        allowed[crowdsaleWallet][owner] = siteAccountAllowance;
+        allowed[crowdsaleWallet][siteAccount] = crowdsaleSupply;
+        allowed[crowdsaleWallet][owner] = crowdsaleSupply;
     }
 
     function _issueTokens(address _to, uint256 _amount) internal {
@@ -320,9 +320,7 @@ contract SKYFToken is Ownable {
         require(_beneficiary != crowdsaleWallet);
         require(_beneficiary != networkDevelopmentWallet);
         require(_beneficiary != communityDevelopmentWallet);
-        require(_beneficiary != reserveWallet);
         require(_beneficiary != bountyWallet);
-        require(_beneficiary != teamWallet);
         require(_beneficiary != siteAccount);
         
 
