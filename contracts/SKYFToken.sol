@@ -175,7 +175,6 @@ contract SKYFToken is Ownable {
         balances[msg.sender] = balances[msg.sender].sub(_value);
         balances[_to] = balances[_to].add(_value);
 
-        _recalculateAirdrop(_to);
 
         emit Transfer(msg.sender, _to, _value);
         return true;
