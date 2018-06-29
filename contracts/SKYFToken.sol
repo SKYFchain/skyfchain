@@ -18,7 +18,7 @@ contract SKYFToken is Ownable {
     /**
      * @dev ERC20 descriptor variables
      */
-    string public constant name = "SKYFchain";
+    string public constant name = "SKYFChain";
     string public constant symbol = "SKYFT";
     uint8 public decimals = 18;
 
@@ -105,7 +105,9 @@ contract SKYFToken is Ownable {
         _issueTokens(teamWallet, teamSupply);
 
         allowed[crowdsaleWallet][siteAccount] = crowdsaleSupply;
+        emit Approval(crowdsaleWallet, siteAccount, crowdsaleSupply);
         allowed[crowdsaleWallet][owner] = crowdsaleSupply;
+        emit Approval(crowdsaleWallet, owner, crowdsaleSupply);
     }
 
     function _issueTokens(address _to, uint256 _amount) internal {
@@ -136,9 +138,9 @@ contract SKYFToken is Ownable {
 
         uint256 allowance = allowed[crowdsaleWallet][siteAccount];
         allowed[crowdsaleWallet][siteAccount] = 0;
-
+        emit Approval(crowdsaleWallet, siteAccount, 0);
         allowed[crowdsaleWallet][_address] = allowed[crowdsaleWallet][_address].add(allowance);
-
+        emit Approval(crowdsaleWallet, _address, allowed[crowdsaleWallet][_address]);
         siteAccount = _address;
     }
 
