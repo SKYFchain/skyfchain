@@ -1,14 +1,23 @@
 module.exports = {
   networks: {
-    // ropsten: {
-    //   mnemonic: "",
-    //   provider: function() {
-    //     return new HDWalletProvider(this.mnemonic, "https://ropsten.infura.io/h8ZokIdf0xBaw51kqbUc", 1);
-    //   },
-    //   gas: 4700000,
-    //   gasPrice: 30000000000,
-    //   network_id: 3
-    // },
+    mainnet: {
+      mnemonic: "",
+      provider: function() {
+        return new HDWalletProvider(this.mnemonic, "https://mainnet.infura.io/XXXXXXXXXXXXXXX");
+      },
+      gas: 4700000,
+      gasPrice: 30000000000,
+      network_id: 1
+    },
+    rinkeby: {
+      mnemonic: "",
+      provider: function() {
+        return new HDWalletProvider(this.mnemonic, "https://rinkeby.infura.io/XXXXXXXXXXXXXXX");
+      },
+      gas: 4700000,
+      gasPrice: 30000000000,
+      network_id: 4
+    },
     development: {
       host: "127.0.0.1",
       port: 8545,

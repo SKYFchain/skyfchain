@@ -9,7 +9,24 @@ module.exports = {
             communityDevelopmentWallet: "0x995d3876d03CeC2Ae2Dc79dC29E066C9C0A1fBF8", // testrpc
             bountyWallet: "0x6aEeE7E0088C067641f8E5a8B83003a7040C65e5", // testrpc
             siteAccount: "0x9dD1c94058c51E1A24c4598B1071fDcaf908205F", // testrpc
-            etherWallet: "0x156419fc32aB83B78421d3881397c2167A5FA552" // testrpc
+        }
+    },
+    rinkeby: {
+        name: "Rinkeby network account",
+        accounts: {
+            crowdsaleWallet: "",
+            communityDevelopmentWallet: "",
+            bountyWallet: "",
+            siteAccount: "",
+        }
+    },
+    mainnet: {
+        name: "Mainnet network account",
+        accounts: {
+            crowdsaleWallet: "",
+            communityDevelopmentWallet: "",
+            bountyWallet: "",
+            siteAccount: "",
         }
     },
     tests: {
