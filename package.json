@@ -16,7 +16,10 @@
   "scripts": {
     "test": "./node_modules/.bin/truffle test --network development",
     "compile": "./node_modules/.bin/truffle compile --all",
-    "migrate": "./node_modules/.bin/truffle migrate --reset --network development",
+    "migrate-dev": "./node_modules/.bin/truffle migrate --reset --network development",
+    "migrate-rkby": "./node_modules/.bin/truffle migrate --reset --network rinkeby",
+    "migrate-prod": "./node_modules/.bin/truffle migrate --network mainnet",
+    "console-dev": "./node_modules/.bin/truffle console --network development",
     "ganache": "node ganache-local.js > /dev/null &",
     "development": "node ganache-local.js"
   }
