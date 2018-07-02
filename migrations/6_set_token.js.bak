@@ -1,0 +1,15 @@
+// var SKYFToken = artifacts.require("./SKYFToken.sol");
+// var SKYFNetworkDevelopmentFund = artifacts.require("./SKYFNetworkDevelopmentFund.sol");
+// var SKYFReserveFund = artifacts.require("./SKYFReserveFund.sol");
+// var SKYFTeamFund = artifacts.require("./SKYFTeamFund.sol");
+// var env = require("../env.js");
+
+// module.exports = function(deployer) {
+//     return SKYFNetworkDevelopmentFund.deployed().then(function(ndf){
+//         return SKYFReserveFund.deployed().then(function(rf){
+//             return SKYFTeamFund.deployed().then(function(tf){
+//                 return SKYFToken.deployed().then(function(token){
+//             }).catch(env.helpers.error);
+//         }).catch(env.helpers.error);
+//     }).catch(env.helpers.error);
+// };

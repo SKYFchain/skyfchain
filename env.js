@@ -40,5 +40,8 @@ module.exports = {
             fourthAirdropAddress: "0xBc6dce860486c4B31E422b12e54512C4025db356"
             
         },
+    },
+    helpers: {
+        error: function(e) {console.log(e);}
     }
 }
