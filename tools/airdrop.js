@@ -11,7 +11,7 @@ module.exports = async function(callback) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    var token = await SKYFToken.at("0xbe4c3eBf48154bd7385D332F846baa421c499027");
+    var token = await SKYFToken.at("0x5dd0815a4cf119ad91ba045bbbf879f3f7de3c68");
 
     var addresses = Object.getOwnPropertyNames(investors.investor);
     for (let val of addresses ) {
